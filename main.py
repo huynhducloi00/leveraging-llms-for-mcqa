@@ -85,7 +85,7 @@ def run_experiment(config):
     #         saver.save()
 
     work_items = [(q_idx, qwe) for q_idx, qwe in enumerate(qwes)]
-    NUM_PROCESS = 6
+    NUM_PROCESS = 2
     tokenizer = AutoTokenizer.from_pretrained(config.model_name)
     standard = get_model_by_name(config.model_name, tokenizer)
     divid = [
@@ -99,7 +99,7 @@ def run_experiment(config):
     )
     print(return_failed_tasks)
     results = sum(results, [])
-    results = sorted(results, key=lambda x: x[0])  # 3 is the real input, 0 is the idx
+    results = sorted(results, key=lambda x: x[0]) 
 
     for q_idx, qwe, response in tqdm(results):
         saver["question_idx"].append(q_idx)
