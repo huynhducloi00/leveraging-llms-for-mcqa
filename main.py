@@ -10,6 +10,7 @@ from models import get_model_by_name
 from tqdm import tqdm
 from parallelbar import progress_map
 import more_itertools as mit
+from transformers import AutoTokenizer
 
 # import multiprocessing
 # import torch.multiprocessing as mp
@@ -83,18 +84,22 @@ def run_experiment(config):
     #         # save after every question
     #         saver.save()
 
-    work_items = [(q_idx, qwe) for q_idx, qwe in enumerate(qwes)][:10]
+    work_items = [(q_idx, qwe) for q_idx, qwe in enumerate(qwes)]
     NUM_PROCESS = 6
+    tokenizer = AutoTokenizer.from_pretrained(config.model_name)
+    standard = get_model_by_name(config.model_name, tokenizer)
     divid = [
-        (rank, get_model_by_name(config.model_name), config.style_name, x)
+        (rank, copy.deepcopy(standard), config.style_name, x)
         for rank, x in enumerate(
             mit.chunked(work_items, (int)(len(work_items) / NUM_PROCESS))
         )
     ]
-    results=sum(progress_map(the_work, divid, context="spawn"),[])
-    results = sorted(
-        results, key=lambda x: x[0]
-    )  # 3 is the real input, 0 is the idx
+    results, return_failed_tasks = progress_map(
+        the_work, divid, context="spawn", return_failed_tasks=True
+    )
+    print(return_failed_tasks)
+    results = sum(results, [])
+    results = sorted(results, key=lambda x: x[0])  # 3 is the real input, 0 is the idx
 
     for q_idx, qwe, response in tqdm(results):
         saver["question_idx"].append(q_idx)

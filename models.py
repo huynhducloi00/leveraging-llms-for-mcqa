@@ -56,10 +56,8 @@ class Test:
 class GPT2Model:
     MAGIC_ARRAY = [idx_to_ltr(m) for m in range(4)]
 
-    def __init__(self, model_name):
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            model_name
-        )
+    def __init__(self, model_name, tokenizer):
+        self.tokenizer=tokenizer
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name
         )
@@ -102,8 +100,8 @@ class CodeParrot(GPT2Model):
 
 class GPT2(GPT2Model):
 
-    def __init__(self, model_name):
-        super().__init__(model_name=model_name)
+    def __init__(self, model_name, tokenizer):
+        super().__init__(model_name=model_name, tokenizer=tokenizer)
 
 
 # class Jurassic:
@@ -267,7 +265,7 @@ class GPT2(GPT2Model):
 #         super().__init__(api_key=api_key, model_name=CURIE_MODEL_NAME)
 
 
-def get_model_by_name(model_name):
+def get_model_by_name(model_name, tokenizer):
     # try:
     #     return {
     #         "codex": Codex,
@@ -277,4 +275,4 @@ def get_model_by_name(model_name):
     #         "jurassic": Jurassic
     #     }[name](api_key=api_key)
     # except KeyError:
-    return GPT2(model_name)
+    return GPT2(model_name, tokenizer)
