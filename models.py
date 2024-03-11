@@ -11,12 +11,9 @@ from constants import (
 )
 from dataclasses import dataclass
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from utils import idx_to_ltr, prep_openai_obj_for_save
+from utils import idx_to_ltr
 
 import numpy as np
-import openai
-import requests
-import time
 
 
 @dataclass
