@@ -83,23 +83,25 @@ def run_experiment(config):
     #         # save after every question
     #         saver.save()
 
-    work_items = [(q_idx, qwe) for q_idx, qwe in enumerate(qwes)]
-    NUM_PROCESS = 1
+    work_items = [(q_idx, qwe) for q_idx, qwe in enumerate(qwes)][:10]
+    NUM_PROCESS = 6
     divid = [
         (rank, get_model_by_name(config.model_name), config.style_name, x)
         for rank, x in enumerate(
             mit.chunked(work_items, (int)(len(work_items) / NUM_PROCESS))
         )
     ]
-    progress_map(the_work, divid, context="spawn")
-    results = sorted(results, key=lambda x: x[0])
+    results=sum(progress_map(the_work, divid, context="spawn"),[])
+    results = sorted(
+        results, key=lambda x: x[0]
+    )  # 3 is the real input, 0 is the idx
 
-    # for q_idx, qwe,response in enumerate(tqdm(results)):
-    #     saver["question_idx"].append(q_idx)
-    #     if qwe.task is not None:
-    #         saver["task"].append(qwe.task)
-    #     saver["qwe"].append(vars(qwe))
-    #     saver["model_response"].append(response)
+    for q_idx, qwe, response in tqdm(results):
+        saver["question_idx"].append(q_idx)
+        if qwe.task is not None:
+            saver["task"].append(qwe.task)
+        saver["qwe"].append(vars(qwe))
+        saver["model_response"].append(vars(response))
 
     saver.save()
 

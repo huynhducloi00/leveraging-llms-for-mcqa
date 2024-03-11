@@ -63,11 +63,12 @@ class GPT2Model:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name
         )
+        self.model.half()
         self.lbls_map = {v: k for k, v in self.tokenizer.vocab.items()}
     
     def process_question_natural(self, question):
         prompt_text = question.get_natural_prompt()
-        inputs = self.tokenizer(prompt_text, return_tensors="pt")
+        inputs = self.tokenizer(prompt_text, return_tensors="pt").to(self.model.device)
         outputs = self.model(**inputs)
         logits = outputs.logits[0, -1]
         probs = logits.softmax(dim=-1)
