@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "main wiht OpenbookQA gpt family",
+            "type": "debugpy",
+            "args": ["obqa","Llama-2-70b-chat-hf","natural","0"],
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "main wiht OpenbookQA gpt2-xl",
+            "type": "debugpy",
+            "args": ["obqa","gpt2-xl","natural","0"],
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "main wiht OpenbookQA llama",
+            "type": "debugpy",
+            "args": ["obqa","huggyllama/llama-7b","natural","0"],
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Analyze wiht OpenbookQA gpt2-xl",
+            "type": "debugpy",
+            "args": ["obqa","gpt2-xl","natural","0"],
+            "request": "launch",
+            "program": "analyze.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Visualize wiht OpenbookQA gpt2",
+            "type": "debugpy",
+            "args": ["obqa","natural","0","--longest"],
+            "request": "launch",
+            "program": "viz_prompts.py",
+            "console": "integratedTerminal"
+        }
+    ]
+}

@@ -1,4 +1,4 @@
-from constants import HF_CACHE_DIR_NAME, MMLU_NAMES, REPRODUCIBILITY_SEED
+from constants import MMLU_NAMES, REPRODUCIBILITY_SEED
 from dataclasses import dataclass
 from datasets import load_dataset
 from itertools import groupby
@@ -28,8 +28,7 @@ def load_hf_dataset(path, name, data_dir, split):
             path=path,
             name=name,
             data_dir=data_dir,
-            split=split,
-            cache_dir=HF_CACHE_DIR_NAME
+            split=split
         )
 
 
@@ -39,7 +38,6 @@ def load_hf_dataset_no_verify(path, name, data_dir, split):
         name=name,
         data_dir=data_dir,
         split=split,
-        cache_dir=HF_CACHE_DIR_NAME,
         ignore_verifications=True
     )
 

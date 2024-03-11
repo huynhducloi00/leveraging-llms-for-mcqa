@@ -3,7 +3,7 @@ from utils import make_dir_if_does_not_exist
 
 CODEX_MODEL_NAME = "code-davinci-002"
 CP_MODEL_NAME = "codeparrot/codeparrot"
-GPT2_MODEL_NAME = "gpt2"
+GPT2_MODEL_NAME = "gpt2-xl"
 GPT3_MODEL_NAME = "davinci"
 CURIE_MODEL_NAME = "text-curie-001"  # Instruct
 INSTRUCT_MODEL_NAME = "text-davinci-002"
@@ -74,10 +74,7 @@ MMLU_NAMES = [
     "world_religions"
 ]
 
-
-HF_CACHE_DIR_NAME = "hf_cache"
 RESULTS_DIR_NAME = "results"
 
-
-for dir_name in [HF_CACHE_DIR_NAME, RESULTS_DIR_NAME]:
+for dir_name in [RESULTS_DIR_NAME]:
     make_dir_if_does_not_exist(dir_name)

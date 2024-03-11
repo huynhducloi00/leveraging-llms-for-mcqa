@@ -16,12 +16,12 @@ def get_config_from_args():
     parser.add_argument(
         "--do_strong_shuffle",
         action="store_true",
-        help="Force correct answer index to change for each example"
+        help="Force correct answer index to change for each example",
     )
     parser.add_argument(
         "--do_perm",
         action="store_true",
-        help="Process every example with all possible answer orderings"
+        help="Process every example with all possible answer orderings",
     )
     args = parser.parse_args()
     return ExperimentConfig(**vars(args))
@@ -29,8 +29,7 @@ def get_config_from_args():
 
 def add_correct_answer_col(df):
     df["correct_answer"] = df.apply(
-        lambda row: idx_to_ltr(row["qwe"]["answer_idx"]),
-        axis=1
+        lambda row: idx_to_ltr(row["qwe"]["answer_idx"]), axis=1
     )
 
 
@@ -52,6 +51,11 @@ def sub_dicts(a, b):
         if key in b.keys():
             new_dict[key] = a[key] - b[key]
     return new_dict
+
+
+def loi_filter(x):
+    MAGIC_ARRAY = [idx_to_ltr(m) for m in range(4)]
+    return {k: v for (k, v) in x.items() if k in MAGIC_ARRAY}
 
 
 def analyze_results(config):
@@ -77,15 +81,16 @@ def analyze_results(config):
             df["ord_lps"] = df.apply(
                 lambda row: [
                     get_lp(
-                        idx_to_ltr(row['perm_order'].index(i)).upper(),
-                        row["model_response"]["logprobs"]
-                    ) for i in range(len(row["perm_order"]))],
-                axis=1
+                        idx_to_ltr(row["perm_order"].index(i)).upper(),
+                        row["model_response"]["logprobs"],
+                    )
+                    for i in range(len(row["perm_order"]))
+                ],
+                axis=1,
             )
 
             df["coverage"] = df.apply(
-                lambda row: np.sum(np.exp(row["ord_lps"])),
-                axis=1
+                lambda row: np.sum(np.exp(row["ord_lps"])), axis=1
             )
             print(f"Coverage: {df['coverage'].mean()}")
 
@@ -93,13 +98,14 @@ def analyze_results(config):
             df["correct"] = df.apply(
                 lambda row: max(
                     row["model_response"]["logprobs"].items(),
-                    key=lambda x: x[1]
+                    key=lambda x: x[1],
                     # In line below [0] is the key (as opposed to value)
                     # Additionally we use 1: instead of lstrip because
                     # we want the prediction "A" to be wrong when " A"
                     # is expected, for example
-                )[0][1:] == idx_to_ltr(row["qwe"]["answer_idx"]),
-                axis=1
+                )[0][1:]
+                == idx_to_ltr(row["qwe"]["answer_idx"]),
+                axis=1,
             )
             print(f"Accuracy: {df['correct'].mean()}")
 
@@ -111,40 +117,30 @@ def analyze_results(config):
             # ANSWER?
             props = list()
             for q_lps in lps_by_question:
-                majority_choice = stats.mode(
-                    [np.argmax(x) for x in q_lps]
-                )[0][0]
+                majority_choice = stats.mode([np.argmax(x) for x in q_lps])[0][0]
                 props.append(
-                    sum(
-                        [np.argmax(x) == majority_choice for x in q_lps]
-                    ) / len(q_lps)
+                    sum([np.argmax(x) == majority_choice for x in q_lps]) / len(q_lps)
                 )
 
             print("PPA:", np.mean(props))
 
-        else:
+        else:  # no permutation
             add_correct_answer_col(df)
             df["chosen_answer_raw"] = df.apply(
                 lambda row: max(
-                    row["model_response"]["logprobs"].items(),
-                    key=lambda x: x[1]
-                    # In line below [0] is the key (as opposed to value)
-                    # Additionally we use 1: instead of lstrip because
-                    # we want the prediction "A" to be wrong when " A"
-                    # is expected, for example
-                )[0][1:],
-                axis=1
+                    row["model_response"]["answer_logits"].items(),
+                    key=lambda x: x[1])[0],
+                axis=1,
             )
-
+            # In line below [0] is the key (as opposed to value)
+            # Additionally we use 1: instead of lstrip because
+            # we want the prediction "A" to be wrong when " A"
+            # is expected, for example
             df["correct"] = df.apply(
-                lambda row: row["chosen_answer_raw"] == row["correct_answer"],
-                axis=1
+                lambda row: row["chosen_answer_raw"] == row["correct_answer"], axis=1
             )
 
-            print(
-                "Accuracy:",
-                df["correct"].mean()
-            )
+            print("Accuracy:", df["correct"].mean())
 
             # If config.ds_name == "mmlu" we'll present accuracy
             # after grouping by "task"
@@ -152,38 +148,36 @@ def analyze_results(config):
                 print("Accuracy by task:")
                 g = df.groupby("task")["correct"].mean()
                 for i, task_name in enumerate(g.index):
-                    print(task_name, round(g[i]*100, 1))
+                    print(task_name, round(g[i] * 100, 1))
     else:
         add_correct_answer_col(df)
         df["chosen_answer_raw"] = df.apply(
             lambda row: max(
                 row["model_response"]["logprobs"].items(),
-                key=lambda x: x[1]
+                key=lambda x: x[1],
                 # In line below [0] is the key (as opposed to value)
                 # No need for 1: here because we assign the letters
                 # manually in models.py
             )[0],
-            axis=1
+            axis=1,
         )
         print(
-            "Accuracy (raw):",
-            (df["chosen_answer_raw"] == df["correct_answer"]).mean()
+            "Accuracy (raw):", (df["chosen_answer_raw"] == df["correct_answer"]).mean()
         )
 
         # Answer with length normalization
         df["chosen_answer_ln"] = df.apply(
             lambda row: max(
                 div_dicts(
-                    row["model_response"]["logprobs"],
-                    row["model_response"]["lens"]
+                    row["model_response"]["logprobs"], row["model_response"]["lens"]
                 ).items(),
-                key=lambda x: x[1]
+                key=lambda x: x[1],
             )[0],
-            axis=1
+            axis=1,
         )
         print(
             "Accuracy (length-normalized):",
-            (df["chosen_answer_ln"] == df["correct_answer"]).mean()
+            (df["chosen_answer_ln"] == df["correct_answer"]).mean(),
         )
 
         # Answer with special normalization
@@ -191,15 +185,15 @@ def analyze_results(config):
             lambda row: max(
                 sub_dicts(
                     row["model_response"]["logprobs"],
-                    row["model_response"]["unconditional_logprobs"]
+                    row["model_response"]["unconditional_logprobs"],
                 ).items(),
-                key=lambda x: x[1]
+                key=lambda x: x[1],
             )[0],
-            axis=1
+            axis=1,
         )
         print(
             "Accuracy (unconditional-normalized):",
-            (df["chosen_answer_sn"] == df["correct_answer"]).mean()
+            (df["chosen_answer_sn"] == df["correct_answer"]).mean(),
         )
 
 
